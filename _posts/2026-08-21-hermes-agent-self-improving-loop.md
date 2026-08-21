@@ -5,6 +5,20 @@ categories: [AI Agents, Hermes Agent]
 tags: [llm, agent, self-improving, prompt-cache]
 ---
 
+<style>
+.dg { --core:#b4530a; --edge:#2f6f8f; --warn:#8a6d00; --danger:#a32020; --ok:#2f7d32;
+      --fill-core:#fdf0e4; --fill-edge:#e9f2f6; --fill-warn:#fdf6e0;
+      --fill-danger:#fbeaea; --fill-ok:#eaf4ea;
+      --line:#e3e0d9; --muted:#6b6862; }
+html[data-mode="dark"] .dg {
+      --core:#f0954a; --edge:#7fbcd8; --warn:#e0be4c; --danger:#e88b8b; --ok:#7ec482;
+      --fill-core:#2e2118; --fill-edge:#18262d; --fill-warn:#2c2718;
+      --fill-danger:#2e1c1c; --fill-ok:#1a2a1c;
+      --line:#33313a; --muted:#9d9891; }
+.dg { margin: 1.5rem 0; }
+.dg svg { display:block; width:100%; height:auto; }
+.dg figcaption { margin-top:.6rem; font-size:.88rem; color:var(--muted); line-height:1.6; }
+</style>
 "스스로 개선하는 에이전트"라는 표현은 가중치가 갱신된다는 뜻으로 읽히기 쉽다. `NousResearch/hermes-agent`가 그렇게 소개하길래 코드 수준에서 실제로 무슨 일이 벌어지는지 끝까지 따라가 봤다. 결론부터 말하면 가중치는 그대로고, 전부 파일 읽기와 쓰기로 설명된다.
 
 ## 문제
@@ -23,6 +37,58 @@ tags: [llm, agent, self-improving, prompt-cache]
 - `_iters_since_skill` — 도구 반복 단위로 센다
 
 두 카운터는 **포크를 띄울지 말지**만 결정한다. 대화에는 아무것도 들어가지 않는다. 이름이 동작을 잘못 설명하고 있는 셈이다.
+
+<figure class="dg">
+<svg viewBox="0 0 880 300" role="img" aria-label="카운터가 대화가 아니라 포크 실행만 결정하는 구조">
+<defs>
+  <marker id="sil1-a" markerWidth="9" markerHeight="9" refX="8" refY="3.2" orient="auto">
+    <path d="M0,0 L8,3.2 L0,6.4 z" fill="currentColor"/>
+  </marker>
+</defs>
+<rect x="20" y="26" width="250" height="120" rx="11"
+      fill="var(--fill-edge)" stroke="var(--edge)" stroke-width="1.6"/>
+<text x="40" y="52" font-size="13.5" font-weight="700" fill="var(--edge)">카운터 2개</text>
+<text x="40" y="80" font-size="12.5" fill="var(--edge)">_turns_since_memory</text>
+<text x="40" y="104" font-size="12.5" fill="var(--edge)">_iters_since_skill</text>
+<text x="40" y="130" font-size="12" fill="var(--muted)">턴 · 도구 반복을 센다</text>
+
+<g color="var(--core)">
+  <path d="M276,86 L346,86" stroke="currentColor" stroke-width="2.2" marker-end="url(#sil1-a)"/>
+</g>
+<text x="311" y="76" font-size="11.5" text-anchor="middle" fill="var(--core)">임계값</text>
+
+<rect x="352" y="26" width="250" height="120" rx="11"
+      fill="var(--fill-core)" stroke="var(--core)" stroke-width="1.6"/>
+<text x="372" y="52" font-size="13.5" font-weight="700" fill="var(--core)">리뷰 포크 실행</text>
+<text x="372" y="80" font-size="12.5" fill="var(--core)">백그라운드 데몬 스레드</text>
+<text x="372" y="104" font-size="12.5" fill="var(--core)">별도 에이전트 인스턴스</text>
+<text x="372" y="130" font-size="12" fill="var(--muted)">결과는 파일로 쓴다</text>
+
+<rect x="20" y="196" width="582" height="76" rx="11"
+      fill="var(--fill-danger)" stroke="var(--danger)" stroke-width="1.6"
+      stroke-dasharray="6 5"/>
+<text x="40" y="224" font-size="13.5" font-weight="700" fill="var(--danger)">대화(시스템 프롬프트) — 아무것도 들어가지 않는다</text>
+<text x="40" y="250" font-size="12.5" fill="var(--danger)">no nudge injection · 프롬프트 캐시가 깨지지 않는다</text>
+
+<g color="var(--danger)">
+  <path d="M477,150 L477,192" stroke="currentColor" stroke-width="2"
+        stroke-dasharray="5 4"/>
+  <path d="M462,168 L492,182 M492,168 L462,182" stroke="currentColor" stroke-width="2.4"/>
+</g>
+
+<rect x="636" y="26" width="224" height="246" rx="11"
+      fill="none" stroke="var(--line)" stroke-width="1.4"/>
+<text x="656" y="52" font-size="13" font-weight="700" fill="var(--muted)">다음 세션</text>
+<text x="656" y="80" font-size="12.5" fill="var(--muted)">파일에서 읽어</text>
+<text x="656" y="102" font-size="12.5" fill="var(--muted)">시스템 프롬프트에</text>
+<text x="656" y="124" font-size="12.5" fill="var(--muted)">반영된다</text>
+<g color="var(--core)">
+  <path d="M608,86 L630,86" stroke="currentColor" stroke-width="2.2" marker-end="url(#sil1-a)"/>
+</g>
+</svg>
+<figcaption>그림 1. 이름은 "nudge"지만 대화에는 아무것도 주입되지 않는다. 카운터는 <strong>포크를 띄울지</strong>만 결정하고, 학습 결과는 파일을 거쳐 다음 세션에 도달한다.</figcaption>
+</figure>
+
 
 ## 바꾼 설계
 
@@ -50,7 +116,8 @@ tags: [llm, agent, self-improving, prompt-cache]
 
 리뷰가 만들어 내는 산출물 가운데 가장 정교한 쪽은 "배우지 말아야 할 것" 목록이다. 그중에서도 특히 눈에 띄는 항목이 하나 있다.
 
-**부정 주장을 기록하지 말 것.**
+> **이 가드가 막는 것.** 부정 주장을 기록하지 말 것 — "브라우저 도구는 안 된다" 같은 문장이 한 번 굳으면 에이전트가 스스로 시도를 접고, 고쳐졌다는 증거도 영영 쌓이지 않는다.
+{: .prompt-danger }
 
 "브라우저 도구는 안 된다" 같은 문장이 한 번 굳으면, 에이전트는 몇 달이 지나도 그 문장을 근거로 스스로 시도를 접는다. 시도를 안 하니 고쳐졌다는 증거도 영영 쌓이지 않는다. 스스로 닫히는 고리다.
 
@@ -66,20 +133,74 @@ tags: [llm, agent, self-improving, prompt-cache]
 
 수명 주기는 `active → stale(30일) → archived(90일)`이고, **자동 삭제는 없다.**
 
+<figure class="dg">
+<svg viewBox="0 0 880 240" role="img" aria-label="리뷰 포크와 큐레이터 두 루프의 역할 분담">
+<defs>
+  <marker id="sil2-a" markerWidth="9" markerHeight="9" refX="8" refY="3.2" orient="auto">
+    <path d="M0,0 L8,3.2 L0,6.4 z" fill="currentColor"/>
+  </marker>
+</defs>
+<rect x="20" y="24" width="330" height="92" rx="11"
+      fill="var(--fill-edge)" stroke="var(--edge)" stroke-width="1.6"/>
+<text x="40" y="50" font-size="13.5" font-weight="700" fill="var(--edge)">루프 1 · 리뷰 포크</text>
+<text x="40" y="76" font-size="12.5" fill="var(--edge)">한 세션만 본다 → 항목이 계속 늘어난다</text>
+<text x="40" y="100" font-size="12.5" fill="var(--muted)">트리거: 카운터 임계값</text>
+
+<rect x="20" y="140" width="330" height="80" rx="11"
+      fill="var(--fill-core)" stroke="var(--core)" stroke-width="1.6"/>
+<text x="40" y="166" font-size="13.5" font-weight="700" fill="var(--core)">루프 2 · 큐레이터</text>
+<text x="40" y="192" font-size="12.5" fill="var(--core)">전체 라이브러리를 훑어 합친다</text>
+<text x="40" y="212" font-size="12" fill="var(--muted)">트리거: 7일 · 2시간 유휴(비활동)</text>
+
+<g color="var(--core)">
+  <path d="M356,130 L470,130" stroke="currentColor" stroke-width="2.2" marker-end="url(#sil2-a)"/>
+</g>
+<text x="413" y="120" font-size="11.5" text-anchor="middle" fill="var(--core)">보정</text>
+
+<rect x="480" y="52" width="380" height="140" rx="11"
+      fill="none" stroke="var(--line)" stroke-width="1.4"/>
+<text x="500" y="80" font-size="13" font-weight="700" fill="var(--muted)">수명 주기</text>
+<rect x="500" y="98" width="100" height="38" rx="8"
+      fill="var(--fill-ok)" stroke="var(--ok)" stroke-width="1.5"/>
+<text x="550" y="122" font-size="12.5" text-anchor="middle" fill="var(--ok)">active</text>
+<g color="var(--muted)">
+  <path d="M606,117 L630,117" stroke="currentColor" stroke-width="2" marker-end="url(#sil2-a)"/>
+</g>
+<rect x="636" y="98" width="100" height="38" rx="8"
+      fill="var(--fill-warn)" stroke="var(--warn)" stroke-width="1.5"/>
+<text x="686" y="122" font-size="12.5" text-anchor="middle" fill="var(--warn)">stale 30일</text>
+<g color="var(--muted)">
+  <path d="M742,117 L766,117" stroke="currentColor" stroke-width="2" marker-end="url(#sil2-a)"/>
+</g>
+<rect x="772" y="98" width="72" height="38" rx="8"
+      fill="var(--fill-edge)" stroke="var(--edge)" stroke-width="1.5"/>
+<text x="808" y="122" font-size="12" text-anchor="middle" fill="var(--edge)">archived</text>
+<text x="500" y="162" font-size="12.5" fill="var(--danger)">자동 삭제는 없다</text>
+</svg>
+<figcaption>그림 2. 리뷰 포크는 <strong>늘리기만</strong> 하고, 큐레이터가 <strong>합쳐서</strong> 보정한다. 크론이 아니라 비활동으로 트리거된다.</figcaption>
+</figure>
+
+
 ### 메모리만 엄격 검사를 거친다
 
 스킬 콘텐츠 검사는 기본으로 꺼져 있다. 어차피 터미널 도구로 같은 코드를 돌릴 수 있으니 검사해 봐야 번거롭기만 하다는 이유다.
 
 반면 메모리는 예외로 엄격 검사를 거친다. 이유는 명확하다 — 메모리는 시스템 프롬프트로 들어가기 때문이다.
 
-보안 모델의 축이 콘텐츠 검열이 아니라 **어디로 흘러 들어가느냐**에 있다. 시스템 프롬프트에 닿는 경로만 조인다.
+> **핵심.** 보안 모델의 축이 콘텐츠 검열이 아니라 **어디로 흘러 들어가느냐**에 있다. 시스템 프롬프트에 닿는 경로만 조인다.
+{: .prompt-info }
 
 ## 검증
 
 2026-08-21 시점 v0.20.4 스냅숏을 클론해 확인했다.
 
-- 확인함: 주입이 없다는 주석 두 지점, 카운터 두 개의 용도, 포크 실행 경로, 도구 배열 동일 전송, 큐레이터 트리거 조건과 수명 주기, 메모리 전용 엄격 검사
-- 확인하지 못함: 비용 26% 절감은 저장소 주석의 수치를 옮긴 것이고 직접 재현하지 않았다. 큐레이터가 실제로 항목을 얼마나 병합하는지도 측정하지 않았다
+| 구분 | 항목 |
+| --- | --- |
+| **확인함** | 주입이 없다는 주석 두 지점 · 카운터 두 개의 용도 · 포크 실행 경로 · 도구 배열 동일 전송 · 큐레이터 트리거 조건과 수명 주기 · 메모리 전용 엄격 검사 |
+| **확인하지 못함** | 비용 26% 절감(저장소 주석의 수치를 옮긴 것) · 큐레이터의 실제 병합량 |
+
+> **주의.** 26%는 내가 측정한 값이 아니라 저장소 주석에 적힌 값이다. 직접 재현하지 않았다.
+{: .prompt-warning }
 
 개선 효과를 판단할 신호도 찾아봤다. 가장 가까운 지표는 `reuse_after_patch` 하나뿐인데, 고친 뒤에 다시 쓰였는지를 세는 것이 전부다.
 
