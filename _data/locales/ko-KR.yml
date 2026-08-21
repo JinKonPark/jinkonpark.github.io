@@ -1,0 +1,9 @@
+# Chirpy는 기본적으로 모든 글에 CC BY 4.0 문구를 표시한다.
+# 글 라이선스는 작성자가 별도로 결정할 때까지 명시하지 않는다.
+copyright:
+  license:
+    template: ""
+    name: ""
+    link: ""
+  brief: 모든 권리 보유
+  verbose: 별도 명시가 없는 한 블로그 게시물의 저작권은 작성자에게 있습니다.
