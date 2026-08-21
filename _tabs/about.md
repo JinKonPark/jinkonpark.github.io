@@ -4,5 +4,15 @@ icon: fas fa-info-circle
 order: 4
 ---
 
-> Add Markdown syntax content to file `_tabs/about.md`{: .filepath } and it will show up on this page.
-{: .prompt-tip }
+AI 에이전트와 LLM 시스템을 개발하며 마주친 문제를 기록합니다.
+
+구현 결과만 나열하기보다 다음 질문에 답하는 글을 쓰려고 합니다.
+
+- 어떤 제약 때문에 이 설계를 선택했는가
+- 실패한 접근에서는 무엇을 배웠는가
+- 동작 여부를 어떤 테스트와 지표로 확인했는가
+- 다른 시스템에도 적용할 수 있는 원칙은 무엇인가
+
+모든 예제는 공개할 수 있는 형태로 다시 작성합니다. 회사, 고객, 내부 저장소를 식별할 수 있는 정보와 운영 데이터는 다루지 않습니다.
+
+코드와 활동은 [GitHub](https://github.com/JinKonPark)에서 확인할 수 있습니다.

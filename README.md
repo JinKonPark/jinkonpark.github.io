@@ -1,39 +1,24 @@
-# Chirpy Starter
+# JinKonPark의 기술 기록
 
-[![Gem Version](https://img.shields.io/gem/v/jekyll-theme-chirpy)][gem]&nbsp;
-[![GitHub license](https://img.shields.io/github/license/cotes2020/chirpy-starter.svg?color=blue)][mit]
+AI 에이전트와 LLM 시스템을 만들며 배운 설계, 평가, 운영 원칙을 기록하는 GitHub Pages 블로그다.
 
-A minimal, ready-to-use template for creating a blog with the [**Chirpy**][chirpy] Jekyll theme. Get up and running in minutes with all critical files pre-configured.
+- 사이트: <https://jinkonpark.github.io>
+- 글 작성 절차: [`docs/publishing.md`](docs/publishing.md)
+- 글 템플릿: [`docs/post-template.md`](docs/post-template.md)
 
-## Why This Starter Exists
+## 로컬 확인
 
-When installing Chirpy through [RubyGems.org][gem], Jekyll can only read a subset of theme files (`_data`, `_layouts`, `_includes`, `_sass`, `assets`) and limited `_config.yml` options from the gem. As a result, users cannot enjoy the full out-of-the-box experience that Chirpy offers.
+Ruby 3.4와 Bundler를 준비한 뒤 실행한다.
 
-To unlock all features, the following files must be present in your Jekyll site:
-
-```shell
-.
-├── _config.yml
-├── _plugins
-├── _tabs
-└── index.html
+```bash
+bundle install
+bundle exec jekyll serve --drafts --livereload
 ```
 
-This starter bundles those files from the latest **Chirpy** release along with a [CD][CD] workflow, so you can start writing immediately.
+프로덕션 빌드와 내부 링크 검사는 다음 명령으로 실행한다.
 
-## Usage
+```bash
+bash tools/test.sh
+```
 
-Check out the [theme's docs](https://github.com/cotes2020/jekyll-theme-chirpy/wiki).
-
-## Contributing
-
-This repository is automatically updated with new releases from the theme repository. If you encounter any issues or want to contribute to its improvement, please visit the [theme repository][chirpy] to provide feedback.
-
-## License
-
-This work is published under [MIT][mit] License.
-
-[gem]: https://rubygems.org/gems/jekyll-theme-chirpy
-[chirpy]: https://github.com/cotes2020/jekyll-theme-chirpy/
-[CD]: https://en.wikipedia.org/wiki/Continuous_deployment
-[mit]: https://github.com/cotes2020/chirpy-starter/blob/master/LICENSE
+테마는 [Jekyll Theme Chirpy](https://github.com/cotes2020/jekyll-theme-chirpy)를 사용한다.
