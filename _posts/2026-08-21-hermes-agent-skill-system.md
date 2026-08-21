@@ -5,6 +5,20 @@ categories: [AI Agents, Hermes Agent]
 tags: [llm, agent, skills, prompt-cache]
 ---
 
+<style>
+.dg { --core:#b4530a; --edge:#2f6f8f; --warn:#8a6d00; --danger:#a32020; --ok:#2f7d32;
+      --fill-core:#fdf0e4; --fill-edge:#e9f2f6; --fill-warn:#fdf6e0;
+      --fill-danger:#fbeaea; --fill-ok:#eaf4ea;
+      --line:#e3e0d9; --muted:#6b6862; }
+html[data-mode="dark"] .dg {
+      --core:#f0954a; --edge:#7fbcd8; --warn:#e0be4c; --danger:#e88b8b; --ok:#7ec482;
+      --fill-core:#2e2118; --fill-edge:#18262d; --fill-warn:#2c2718;
+      --fill-danger:#2e1c1c; --fill-ok:#1a2a1c;
+      --line:#33313a; --muted:#9d9891; }
+.dg { margin: 1.5rem 0; }
+.dg svg { display:block; width:100%; height:auto; }
+.dg figcaption { margin-top:.6rem; font-size:.88rem; color:var(--muted); line-height:1.6; }
+</style>
 에이전트에 붙일 스킬이 200개 가까이 되면 설명을 전부 시스템 프롬프트에 넣을 수 없다. `NousResearch/hermes-agent`는 스킬 199개를 관리하면서 프롬프트 예산을 15KB 안쪽으로 유지한다. 어떻게 하는지 코드를 따라가 봤다.
 
 ## 문제
@@ -31,7 +45,7 @@ SKILL_PROMPT_DESC_LIMIT = 60
 
 전체 내용은 세 단계로 나뉜다.
 
-| 단계 | 언제 로드되나 | 내용 |
+| 단계 | 로드 시점 | 내용 |
 | --- | --- | --- |
 | 1 | 항상 | 이름 + 설명 60자 |
 | 2 | 스킬이 선택됐을 때 | `SKILL.md` 본문 |
@@ -40,6 +54,55 @@ SKILL_PROMPT_DESC_LIMIT = 60
 부속 폴더는 네 종류만 쓸 수 있다 — `references/`(88개 스킬), `scripts/`(53), `templates/`(21), `assets/`(2). 절반 넘는 스킬은 `SKILL.md` 한 장으로 끝난다. 본문 상한은 100,000자이고, 넘으면 참조 파일로 쪼개라는 신호다.
 
 여기서 눈여겨볼 점은 상한값 자체가 아니라 **어느 단계에 무엇을 둘지 강제하는 구조**다. 1단계를 60자로 고정하면 나머지 설계가 따라온다.
+
+<figure class="dg">
+<svg viewBox="0 0 880 290" role="img" aria-label="점진적 공개 3단계와 각 단계의 프롬프트 비용">
+<defs>
+  <marker id="ss1-a" markerWidth="9" markerHeight="9" refX="8" refY="3.2" orient="auto">
+    <path d="M0,0 L8,3.2 L0,6.4 z" fill="currentColor"/>
+  </marker>
+</defs>
+<rect x="20" y="30" width="270" height="100" rx="11"
+      fill="var(--fill-core)" stroke="var(--core)" stroke-width="2"/>
+<text x="40" y="56" font-size="13.5" font-weight="700" fill="var(--core)">1단계 · 항상 로드</text>
+<text x="40" y="80" font-size="12.5" fill="var(--core)">이름 + 설명 60자</text>
+<text x="40" y="102" font-size="12.5" fill="var(--muted)">스킬당 70~80바이트</text>
+<text x="40" y="122" font-size="12.5" font-weight="700" fill="var(--core)">199개 전부 = 15KB 이내</text>
+
+<g color="var(--edge)">
+  <path d="M296,80 L336,80" stroke="currentColor" stroke-width="2.2" marker-end="url(#ss1-a)"/>
+</g>
+<text x="316" y="70" font-size="11" text-anchor="middle" fill="var(--edge)">선택됨</text>
+
+<rect x="342" y="30" width="250" height="100" rx="11"
+      fill="var(--fill-edge)" stroke="var(--edge)" stroke-width="1.6"/>
+<text x="362" y="56" font-size="13.5" font-weight="700" fill="var(--edge)">2단계 · 선택 시</text>
+<text x="362" y="80" font-size="12.5" fill="var(--edge)">SKILL.md 본문</text>
+<text x="362" y="102" font-size="12.5" fill="var(--muted)">상한 100,000자</text>
+
+<g color="var(--edge)">
+  <path d="M598,80 L638,80" stroke="currentColor" stroke-width="2.2" marker-end="url(#ss1-a)"/>
+</g>
+<text x="618" y="70" font-size="11" text-anchor="middle" fill="var(--edge)">필요 시</text>
+
+<rect x="644" y="30" width="216" height="100" rx="11"
+      fill="none" stroke="var(--line)" stroke-width="1.5"/>
+<text x="664" y="56" font-size="13.5" font-weight="700" fill="var(--muted)">3단계 · 필요할 때</text>
+<text x="664" y="80" font-size="12.5" fill="var(--muted)">references/ scripts/</text>
+<text x="664" y="102" font-size="12.5" fill="var(--muted)">templates/ assets/</text>
+
+<rect x="20" y="160" width="840" height="110" rx="11"
+      fill="var(--fill-warn)" stroke="var(--warn)" stroke-width="1.6"/>
+<text x="40" y="188" font-size="13.5" font-weight="700" fill="var(--warn)">SKILL_PROMPT_DESC_LIMIT = 60 — 같은 상수, 네 곳이 다르게 반응한다</text>
+<text x="40" y="216" font-size="12.5" fill="var(--warn)">렌더링: 조용히 잘라낸다 desc[:57] + "…"</text>
+<text x="40" y="238" font-size="12.5" fill="var(--warn)">린터: 경고만 낸다</text>
+<text x="450" y="216" font-size="12.5" fill="var(--warn)">하드 검증기: 신규 생성일 때만 거부</text>
+<text x="450" y="238" font-size="12.5" fill="var(--danger)">CI: 실패시킨다</text>
+<text x="40" y="260" font-size="12" fill="var(--muted)">기존 스킬을 고칠 때는 검증을 일부러 건너뛴다 — 전부 막는 대신 신규만 막는다</text>
+</svg>
+<figcaption>그림 1. 1단계를 60자로 고정하면 나머지 설계가 따라온다. 눈여겨볼 점은 상한값이 아니라 <strong>어느 단계에 무엇을 둘지 강제하는 구조</strong>다.</figcaption>
+</figure>
+
 
 ### 같은 상수를 네 곳이 다르게 다룬다
 
@@ -74,7 +137,10 @@ SKILL_PROMPT_DESC_LIMIT = 60
 
 ### 설치 정책은 신뢰도 × 판정 매트릭스
 
-외부 스킬을 설치할 때는 출처 신뢰도와 스캔 판정을 교차해서 결정한다. 핵심 규칙 하나만 꼽자면 **강제 플래그로도 위험 판정은 뚫지 못한다.**
+외부 스킬을 설치할 때는 출처 신뢰도와 스캔 판정을 교차해서 결정한다.
+
+> **이 가드가 막는 것.** 강제 플래그로도 위험 판정은 뚫지 못한다. `--force` 가 있어도 critical 이 하나라도 잡히면 설치는 거부된다.
+{: .prompt-danger }
 
 판정을 정하는 규칙도 명확하다. critical이 하나라도 있으면 위험, high가 있으면 주의, medium과 low만 있으면 안전으로 친다. 낮은 등급 발견은 참고 정보로만 다룬다.
 
@@ -84,14 +150,19 @@ SKILL_PROMPT_DESC_LIMIT = 60
 
 가장 솔직한 주석이 여기 있다. 에이전트가 직접 만든 스킬은 보안 스캔이 기본으로 꺼진다. 에이전트는 이미 터미널 도구로 같은 코드를 아무 게이트 없이 실행할 수 있기 때문이다. 문서 작성만 검사해 봐야 더 안전해지지는 않고 번거로움만 늘어난다.
 
+> **이 문서가 정정하는 통념 하나.** 에이전트가 직접 만든 스킬은 보안 스캔이 기본으로 꺼져 있다. 에이전트는 이미 터미널 도구로 같은 코드를 아무 게이트 없이 실행할 수 있으므로, 문서 작성만 검사해 봐야 더 안전해지지 않는다.
+{: .prompt-info }
+
 스캔은 "밖에서 들어오는 것"을 막는 장치라는 뜻이다. 위협 모델을 분명히 정하고 거기에 맞춰 검사를 배치한 사례로 읽힌다.
 
 ## 검증
 
 2026-08 시점의 main 브랜치를 클론해 파일 단위로 하나씩 확인했다.
 
-- 확인함: 스킬 개수 199개(82 + 117), 부속 폴더 4종의 스킬별 사용 수, 60자 상수와 이를 참조하는 네 지점, 탐색 우선순위, 설치 정책 매트릭스
-- 확인하지 못함: 15KB라는 프롬프트 예산이 실제 요청에서도 그대로 유지되는지. 계산으로 어림했을 뿐 실제 요청을 캡처하지는 않았다
+| 구분 | 항목 |
+| --- | --- |
+| **확인함** | 스킬 199개(82 + 117) · 부속 폴더 4종을 쓰는 스킬 개수 · 60자 상수와 참조 네 지점 · 탐색 우선순위 · 설치 정책 매트릭스 |
+| **확인하지 못함** | 15KB 프롬프트 예산이 실제 요청에서 유지되는지 — 계산으로 어림했을 뿐 요청을 캡처하지 않았다 |
 
 CI가 막는 항목에는 스타일 규칙도 있다. 설명이 마침표로 끝나면 안 되고, 홍보성 단어(powerful, comprehensive, seamless 등)를 쓰면 실패한다. 예외 목록은 지금 비어 있다 — 199개 전부가 규칙을 지키고 있다는 뜻이다.
 

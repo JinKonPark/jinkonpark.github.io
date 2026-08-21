@@ -5,6 +5,20 @@ categories: [AI Agents, Hermes Agent]
 tags: [llm, agent, onboarding, testing]
 ---
 
+<style>
+.dg { --core:#b4530a; --edge:#2f6f8f; --warn:#8a6d00; --danger:#a32020; --ok:#2f7d32;
+      --fill-core:#fdf0e4; --fill-edge:#e9f2f6; --fill-warn:#fdf6e0;
+      --fill-danger:#fbeaea; --fill-ok:#eaf4ea;
+      --line:#e3e0d9; --muted:#6b6862; }
+html[data-mode="dark"] .dg {
+      --core:#f0954a; --edge:#7fbcd8; --warn:#e0be4c; --danger:#e88b8b; --ok:#7ec482;
+      --fill-core:#2e2118; --fill-edge:#18262d; --fill-warn:#2c2718;
+      --fill-danger:#2e1c1c; --fill-ok:#1a2a1c;
+      --line:#33313a; --muted:#9d9891; }
+.dg { margin: 1.5rem 0; }
+.dg svg { display:block; width:100%; height:auto; }
+.dg figcaption { margin-top:.6rem; font-size:.88rem; color:var(--muted); line-height:1.6; }
+</style>
 `NousResearch/hermes-agent`에는 1,100줄짜리 정본 문서가 있다. 그런데도 코드를 고치러 들어간 첫날 막혔다. 무엇이 부족했는지, 그리고 문서와 실제가 갈리는 지점을 어떻게 찾았는지 정리한다.
 
 ## 문제
@@ -14,6 +28,49 @@ tags: [llm, agent, onboarding, testing]
 빠진 것은 **읽는 순서**였다. 의존 그래프는 순서가 아니다. 어디가 입구인지, 무엇을 먼저 이해해야 다음이 읽히는지는 그래프만 봐서는 알 수 없다.
 
 문서가 부실해서 생긴 문제가 아니라, 문서가 답하지 않는 질문이 따로 있다는 문제였다.
+
+<figure class="dg">
+<svg viewBox="0 0 800 250" role="img" aria-label="의존 그래프는 있지만 읽는 순서가 없다">
+<defs>
+  <marker id="ob1-a" markerWidth="9" markerHeight="9" refX="8" refY="3.2" orient="auto">
+    <path d="M0,0 L8,3.2 L0,6.4 z" fill="currentColor"/>
+  </marker>
+</defs>
+<rect x="16" y="30" width="360" height="200" rx="11"
+      fill="var(--fill-edge)" stroke="var(--edge)" stroke-width="1.6"/>
+<text x="36" y="56" font-size="13.5" font-weight="700" fill="var(--edge)">정본 문서가 답하는 것</text>
+<text x="36" y="80" font-size="12.5" fill="var(--edge)">임포트 의존 사슬 — 무엇이 무엇을 가져오는가</text>
+<circle cx="90" cy="130" r="17" fill="var(--fill-edge)" stroke="var(--edge)" stroke-width="1.6"/>
+<circle cx="190" cy="112" r="17" fill="var(--fill-edge)" stroke="var(--edge)" stroke-width="1.6"/>
+<circle cx="190" cy="170" r="17" fill="var(--fill-edge)" stroke="var(--edge)" stroke-width="1.6"/>
+<circle cx="290" cy="140" r="17" fill="var(--fill-edge)" stroke="var(--edge)" stroke-width="1.6"/>
+<g color="var(--edge)">
+  <path d="M108,124 L172,114" stroke="currentColor" stroke-width="1.8" marker-end="url(#ob1-a)"/>
+  <path d="M108,138 L172,166" stroke="currentColor" stroke-width="1.8" marker-end="url(#ob1-a)"/>
+  <path d="M208,118 L272,134" stroke="currentColor" stroke-width="1.8" marker-end="url(#ob1-a)"/>
+  <path d="M208,164 L272,146" stroke="currentColor" stroke-width="1.8" marker-end="url(#ob1-a)"/>
+</g>
+<text x="36" y="212" font-size="12" fill="var(--muted)">1,100줄 · 정확하다</text>
+
+<rect x="424" y="30" width="360" height="200" rx="11"
+      fill="var(--fill-danger)" stroke="var(--danger)" stroke-width="1.6"
+      stroke-dasharray="6 5"/>
+<text x="444" y="56" font-size="13.5" font-weight="700" fill="var(--danger)">답하지 않는 것</text>
+<text x="444" y="80" font-size="12.5" fill="var(--danger)">읽는 순서 — 어디가 입구인가</text>
+<rect x="444" y="102" width="70" height="34" rx="8" fill="var(--fill-warn)" stroke="var(--warn)" stroke-width="1.5"/>
+<text x="479" y="124" font-size="13" text-anchor="middle" fill="var(--warn)">?</text>
+<g color="var(--muted)"><path d="M520,119 L556,119" stroke="currentColor" stroke-width="1.8" marker-end="url(#ob1-a)"/></g>
+<rect x="562" y="102" width="70" height="34" rx="8" fill="var(--fill-warn)" stroke="var(--warn)" stroke-width="1.5"/>
+<text x="597" y="124" font-size="13" text-anchor="middle" fill="var(--warn)">?</text>
+<g color="var(--muted)"><path d="M638,119 L674,119" stroke="currentColor" stroke-width="1.8" marker-end="url(#ob1-a)"/></g>
+<rect x="680" y="102" width="70" height="34" rx="8" fill="var(--fill-warn)" stroke="var(--warn)" stroke-width="1.5"/>
+<text x="715" y="124" font-size="13" text-anchor="middle" fill="var(--warn)">?</text>
+<text x="444" y="170" font-size="12.5" fill="var(--danger)">의존 그래프는 순서가 아니다</text>
+<text x="444" y="192" font-size="12.5" fill="var(--danger)">문서와 코드가 갈리는 지점 11군데</text>
+</svg>
+<figcaption>그림 1. 문서가 부실해서 생긴 문제가 아니라, <strong>문서가 답하지 않는 질문</strong>이 따로 있다는 문제였다.</figcaption>
+</figure>
+
 
 ## 처음 시도한 접근
 
@@ -36,7 +93,8 @@ tags: [llm, agent, onboarding, testing]
 - PR 템플릿: `pytest tests/ -q`를 체크리스트로 요구
 - 개발 가이드: "맨 pytest 절대 금지, 반드시 래퍼 스크립트"
 
-정답은 래퍼다. 문서에만 있고 실제로는 존재하지 않는 플래그와 파일도 있었다. 문서에 적힌 대로 실행하면 그냥 실패한다.
+> **이 문서가 정정하는 통념 하나.** PR 템플릿은 `pytest tests/ -q` 를 체크리스트로 요구하고, 개발 가이드는 "맨 pytest 절대 금지, 반드시 래퍼 스크립트"라고 적는다. **정답은 래퍼다.** 문서에만 있고 실제로는 없는 플래그와 파일도 있어서, 적힌 대로 실행하면 그냥 실패한다.
+{: .prompt-danger }
 
 ### 실습을 두 개 넣었다
 
@@ -55,7 +113,8 @@ tags: [llm, agent, onboarding, testing]
 registry.register()   →   toolsets 등재   →   check_fn 런타임 게이트
 ```
 
-여기에 함정이 하나 더 있다. `requires_env`라는 필드가 있는데, 이름과 달리 진짜 게이트가 아니다. 표시용 메타데이터일 뿐이다. 이 필드에 환경변수를 적어 두면 게이트가 걸리겠거니 생각하면 낭패를 본다.
+> **핵심 함정.** `requires_env` 는 이름과 달리 **진짜 게이트가 아니다** — 표시용 메타데이터일 뿐이다. 이 필드에 환경변수를 적어 두면 게이트가 걸리려니 하고 넘어갔다간 낭패를 본다.
+{: .prompt-warning }
 
 이름이 동작을 잘못 설명하는 필드는 문서보다 코드를 봐야 알 수 있다.
 
@@ -68,7 +127,7 @@ registry.register()   →   toolsets 등재   →   check_fn 런타임 게이트
 | 프롬프트 캐시 불가침 | 앞쪽 컨텍스트를 건드리면 비용이 다시 든다 |
 | 프로파일 안전 경로 사용 | 홈 디렉터리를 직접 조립하지 않는다 |
 | 크로스플랫폼 | 경로 구분자와 셸 가정을 넣지 않는다 |
-| 의존성 정확 핀 | 범위 지정 대신 정확한 버전 |
+| 의존성 버전 고정 | 범위 지정 대신 정확한 버전으로 |
 | 변경 감지 테스트 금지 | 개수나 목록을 고정하는 테스트를 만들지 않는다 |
 
 마지막 항목이 특히 눈여겨볼 만하다. "스킬이 199개인지 확인" 같은 테스트를 금지한다. 이런 테스트는 기능이 깨졌을 때가 아니라 **정상적으로 늘어났을 때** 실패한다. 신호가 아니라 소음이 된다.
@@ -77,8 +136,10 @@ registry.register()   →   toolsets 등재   →   check_fn 런타임 게이트
 
 이 가이드는 2026-07-29 시점 v0.19.0 스냅숏을 클론해 확인하며 썼다. 저장소 문서를 옮긴 것이 아니라 각 주장을 코드에서 다시 확인했다.
 
-- 확인함: 세 관문의 실제 코드 경로, `requires_env`가 게이트가 아니라는 점, 문서와 실제가 갈리는 11개 지점, 테스트 래퍼가 정답이라는 점
-- 확인하지 못함: 이 순서로 읽었을 때 실제로 온보딩이 빨라지는지. 내 경험 하나뿐이고 다른 사람에게 시켜 보지 않았다
+| 구분 | 항목 |
+| --- | --- |
+| **확인함** | 세 관문의 실제 코드 경로 · `requires_env` 가 게이트가 아니라는 점 · 문서와 실제가 갈리는 11개 지점 · 테스트 래퍼가 정답이라는 점 |
+| **확인하지 못함** | 이 순서로 읽으면 온보딩이 빨라지는지 — 내 경험 하나뿐이고 다른 사람에게 시켜 보지 않았다 |
 
 ## 한계
 
