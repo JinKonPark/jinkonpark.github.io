@@ -1,6 +1,6 @@
 ---
 title: "스킬 199개를 시스템 프롬프트에 넣지 않고 관리하는 방법"
-date: 2026-08-21 20:20:00 +0900
+date: 2026-08-21 13:40:00 +0900
 categories: [AI Agents, Hermes Agent]
 tags: [llm, agent, skills, prompt-cache]
 ---

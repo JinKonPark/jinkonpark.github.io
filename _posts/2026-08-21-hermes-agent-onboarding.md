@@ -1,6 +1,6 @@
 ---
 title: "정본 문서가 있어도 온보딩이 막히는 이유"
-date: 2026-08-21 21:00:00 +0900
+date: 2026-08-21 14:00:00 +0900
 categories: [AI Agents, Hermes Agent]
 tags: [llm, agent, onboarding, testing]
 ---
