@@ -1,6 +1,6 @@
 ---
 title: "자가개선 에이전트는 실제로 무엇을 하는가"
-date: 2026-08-21 20:40:00 +0900
+date: 2026-08-21 13:50:00 +0900
 categories: [AI Agents, Hermes Agent]
 tags: [llm, agent, self-improving, prompt-cache]
 ---

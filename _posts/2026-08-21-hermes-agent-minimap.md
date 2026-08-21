@@ -1,6 +1,6 @@
 ---
 title: "에이전트 하네스를 처음 열었을 때 어디부터 봐야 하는가"
-date: 2026-08-21 20:00:00 +0900
+date: 2026-08-21 13:20:00 +0900
 categories: [AI Agents, Hermes Agent]
 tags: [llm, agent, agent-harness, architecture]
 ---
