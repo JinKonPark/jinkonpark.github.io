@@ -8,6 +8,9 @@ Gemfile.lock
 .jekyll-metadata
 _site
 
+# Local-only drafts. Move reviewed posts to `_posts` before committing.
+_drafts/
+
 # RubyGems
 *.gem
 

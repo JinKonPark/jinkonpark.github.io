@@ -2,7 +2,7 @@
 
 ## 새 글 시작
 
-기술 글은 먼저 `_drafts`에 작성한다.
+기술 글은 먼저 `_drafts`에 작성한다. 이 디렉터리는 공개 저장소에 초안이 노출되지 않도록 Git에서 제외한다.
 
 ```bash
 cp docs/post-template.md _drafts/<slug>.md
